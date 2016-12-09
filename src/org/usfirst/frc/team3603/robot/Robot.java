@@ -46,7 +46,7 @@ public class Robot extends IterativeRobot {
     	
     	jerrie.setMaxPeriod(.1);
     	jerrie.setMinRate(10);
-    	jerrie.setDistancePerPulse(5);
+    	jerrie.setDistancePerPulse(5); //NEEDS WORK
     	jerrie.setSamplesToAverage(7);
     }
     
