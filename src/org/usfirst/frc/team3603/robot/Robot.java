@@ -41,7 +41,7 @@ public class Robot extends IterativeRobot {
     Timer timer = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
-    VisionP vision = new VisionP();
+    VisionP vision;
     
     public void robotInit() {
     	gyro.calibrate();
@@ -50,6 +50,7 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
+		vision = new VisionP(vision.callibrate(100));
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
@@ -90,13 +91,7 @@ public class Robot extends IterativeRobot {
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
-    		vision.process();
     		SmartDashboard.putNumber("X of contour", vision.getCenterX(0));
-    		try {
-				Thread.sleep(21);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
     	}
     }
     public void testPeriodic() {
@@ -109,23 +104,16 @@ public class Robot extends IterativeRobot {
 	}
     
     private void RedAuton() {
-    	int step = 1;
     	double off = 123456789;
     	timer.start();
     	while(isEnabled() && isAutonomous() && timer.get() < 15) {
-    		vision.process();
-    		if(timer.get() < 3 && enc.getDistance() < 8 && step == 1) {
+    		while(timer.get() < 3 && enc.getDistance() < 8) {
     			mainDrive.mecanumDrive_Cartesian(0, 1.0, 0, gyro.getAngle());
-    		} else {
-    			step = 2;
     		}
-    		if(timer.get() < 3 && gyro.getAngle() < 45 && step == 2) {
+    		while(timer.get() < 3 && gyro.getAngle() < 45) {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
-    		} else {
-    			step = 3;
     		}
-    		if(timer.get() < 9 && step == 3 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50)) {
-    			vision.process();
+    		while(timer.get() < 9 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50) && vision.getCenterGear()!=123456789) {
     			off = vision.getCenterGear() - vision.getImageWidth();
     			if(off > vision.getImageWidth() + 50) {
     				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
@@ -133,46 +121,28 @@ public class Robot extends IterativeRobot {
     			if(off < vision.getImageWidth() - 50) {
     				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
     			}
-    			try {
-					Thread.sleep(21);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-    		} else {
-    			step = 4;
     		}
-    		if(timer.get() < 11 && step == 4) {
+    		while(timer.get() < 11) {
     			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-    		} else {
-    			step = 5;
     		}
-    		if(timer.get() < 15 && step == 5) {
+    		while(timer.get() < 15) {
     			shoot.set(1);
-    		} else {
-    			step = 6;
-    			shoot.set(0);
     		}
     	}
+    	shoot.set(0);
     }
     
     private void BlueAuton() {
-    	int step = 1;
     	double off = 123456789;
     	timer.start();
     	while(isEnabled() && isAutonomous() && timer.get() < 15) {
-    		vision.process();
-    		if(timer.get() < 3 && enc.getDistance() < 8 && step == 1) {
+    		while(timer.get() < 3 && enc.getDistance() < 8) {
     			mainDrive.mecanumDrive_Cartesian(0, 1.0, 0, gyro.getAngle());
-    		} else {
-    			step = 2;
     		}
-    		if(timer.get() < 3 && gyro.getAngle() > -45 && step == 2) {
+    		while(timer.get() < 3 && gyro.getAngle() > -45) {
     			mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
-    		} else {
-    			step = 3;
-    		}
-    		if(timer.get() < 9 && step == 3 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50)) {
-    			vision.process();
+    		} 
+    		while(timer.get() < 9 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50) && vision.getCenterGear()!=123456789) {
     			off = vision.getCenterGear() - vision.getImageWidth();
     			if(off > vision.getImageWidth() + 50) {
     				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
@@ -180,25 +150,14 @@ public class Robot extends IterativeRobot {
     			if(off < vision.getImageWidth() - 50) {
     				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
     			}
-    			try {
-					Thread.sleep(21);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-    		} else {
-    			step = 4;
     		}
-    		if(timer.get() < 11 && step == 4) {
+    		while(timer.get() < 11) {
     			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-    		} else {
-    			step = 5;
     		}
-    		if(timer.get() < 15 && step == 5) {
+    		while(timer.get() < 15) {
     			shoot.set(1);
-    		} else {
-    			step = 6;
-    			shoot.set(0);
     		}
     	}
+    	shoot.set(0);
     }
 }
