@@ -32,6 +32,7 @@ public class Robot extends IterativeRobot {
     Victor backRight = new Victor(1);
     Victor frontLeft = new Victor(2);
     Victor frontRight = new Victor(3);
+    Victor shoot = new Victor(4);
     
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
@@ -55,19 +56,21 @@ public class Robot extends IterativeRobot {
     }
     public void autonomousPeriodic() {
     	timer.start();
-    	switch (autoSelected) {
-		case defaultAuto:
-			DefaultAuto();
-			break;
-
-		case redAuton:
-			RedAuton();
-			break;
-		
-		case blueAuton:
-			BlueAuton();
-			break;
-		}
+    	while(isEnabled() && isAutonomous()) {
+	    	switch (autoSelected) {
+			case defaultAuto:
+				DefaultAuto();
+				break;
+	
+			case redAuton:
+				RedAuton();
+				break;
+			
+			case blueAuton:
+				BlueAuton();
+				break;
+			}
+    	}
     }
     
 	public void teleopPeriodic() {
@@ -84,31 +87,118 @@ public class Robot extends IterativeRobot {
 	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
 	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, gyro.getAngle());
 	    		}
-	    		if(joy1.getRawButton(1)) {
-	    			double center = vision.getImageWidth()/2;
-	    			if(vision.getCenterX()>=center+10) {
-	    				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, 0);
-	    			}
-	    			if(vision.getCenterX()<=center-10) {
-	    				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, 0);
-	    			}
-	    			if(vision.getCenterX()>center-10&&vision.getCenterX()<center+10) {
-	    				//place gear
-	    			}
-	    		}
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
+    		vision.process();
+    		SmartDashboard.putNumber("X of contour", vision.getCenterX(0));
+    		try {
+				Thread.sleep(21);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
     	}
     }
     public void testPeriodic() {
     }
     
     private void DefaultAuto() {
-    	while(enc.getDistance() < 15 && timer.get() < 15) {
+    	while(enc.getDistance() < 10 && timer.get() < 15) {
 			mainDrive.mecanumDrive_Cartesian(0, .5, 0, gyro.getAngle());
 		}
 	}
-    private void RedAuton() {}
-    private void BlueAuton() {}
+    
+    private void RedAuton() {
+    	int step = 1;
+    	double off = 123456789;
+    	timer.start();
+    	while(isEnabled() && isAutonomous() && timer.get() < 15) {
+    		vision.process();
+    		if(timer.get() < 3 && enc.getDistance() < 8 && step == 1) {
+    			mainDrive.mecanumDrive_Cartesian(0, 1.0, 0, gyro.getAngle());
+    		} else {
+    			step = 2;
+    		}
+    		if(timer.get() < 3 && gyro.getAngle() < 45 && step == 2) {
+    			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
+    		} else {
+    			step = 3;
+    		}
+    		if(timer.get() < 9 && step == 3 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50)) {
+    			vision.process();
+    			off = vision.getCenterGear() - vision.getImageWidth();
+    			if(off > vision.getImageWidth() + 50) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
+    			}
+    			if(off < vision.getImageWidth() - 50) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
+    			}
+    			try {
+					Thread.sleep(21);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+    		} else {
+    			step = 4;
+    		}
+    		if(timer.get() < 11 && step == 4) {
+    			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
+    		} else {
+    			step = 5;
+    		}
+    		if(timer.get() < 15 && step == 5) {
+    			shoot.set(1);
+    		} else {
+    			step = 6;
+    			shoot.set(0);
+    		}
+    	}
+    }
+    
+    private void BlueAuton() {
+    	int step = 1;
+    	double off = 123456789;
+    	timer.start();
+    	while(isEnabled() && isAutonomous() && timer.get() < 15) {
+    		vision.process();
+    		if(timer.get() < 3 && enc.getDistance() < 8 && step == 1) {
+    			mainDrive.mecanumDrive_Cartesian(0, 1.0, 0, gyro.getAngle());
+    		} else {
+    			step = 2;
+    		}
+    		if(timer.get() < 3 && gyro.getAngle() > -45 && step == 2) {
+    			mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
+    		} else {
+    			step = 3;
+    		}
+    		if(timer.get() < 9 && step == 3 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50)) {
+    			vision.process();
+    			off = vision.getCenterGear() - vision.getImageWidth();
+    			if(off > vision.getImageWidth() + 50) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
+    			}
+    			if(off < vision.getImageWidth() - 50) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
+    			}
+    			try {
+					Thread.sleep(21);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+    		} else {
+    			step = 4;
+    		}
+    		if(timer.get() < 11 && step == 4) {
+    			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
+    		} else {
+    			step = 5;
+    		}
+    		if(timer.get() < 15 && step == 5) {
+    			shoot.set(1);
+    		} else {
+    			step = 6;
+    			shoot.set(0);
+    		}
+    	}
+    }
 }
