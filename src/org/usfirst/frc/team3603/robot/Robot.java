@@ -41,7 +41,7 @@ public class Robot extends IterativeRobot {
     Timer timer = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
-    VisionP vision;
+    Vision2017 vision = new Vision2017();
     
     public void robotInit() {
     	gyro.calibrate();
@@ -50,7 +50,6 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
-		vision = new VisionP(vision.callibrate(100));
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
@@ -64,11 +63,11 @@ public class Robot extends IterativeRobot {
 				break;
 	
 			case redAuton:
-				RedAuton();
+				//RedAuton();
 				break;
 			
 			case blueAuton:
-				BlueAuton();
+				//BlueAuton();
 				break;
 			}
     	}
@@ -91,7 +90,8 @@ public class Robot extends IterativeRobot {
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
-    		SmartDashboard.putNumber("X of contour", vision.getCenterX(0));
+    		SmartDashboard.putNumber("Center X", vision.getContour1CenterX());
+    		SmartDashboard.putNumber("Center Y", vision.getContour1CenterY());
     	}
     }
     public void testPeriodic() {
@@ -102,7 +102,7 @@ public class Robot extends IterativeRobot {
 			mainDrive.mecanumDrive_Cartesian(0, .5, 0, gyro.getAngle());
 		}
 	}
-    
+    /*
     private void RedAuton() {
     	double off = 123456789;
     	timer.start();
@@ -160,4 +160,5 @@ public class Robot extends IterativeRobot {
     	}
     	shoot.set(0);
     }
+    */
 }
