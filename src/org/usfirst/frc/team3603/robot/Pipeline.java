@@ -25,7 +25,7 @@ import edu.wpi.first.wpilibj.vision.VisionPipeline;
 * @author GRIP
 */
 public class Pipeline implements VisionPipeline {
-
+//
 	//Outputs
 	private Mat rgbThresholdOutput = new Mat();
 	private Mat hsvThresholdOutput = new Mat();

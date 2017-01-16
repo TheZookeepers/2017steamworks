@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.vision.VisionThread;
 public class Vision2017 {
 	private static final int IMG_WIDTH = 320;
 	private static final int IMG_HEIGHT = 240;
-
+//
 	private VisionThread visionThread;
 	private double contour1CenterX = 0.0;
 	private double contour1CenterY = 0.0;

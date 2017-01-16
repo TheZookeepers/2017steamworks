@@ -8,6 +8,7 @@ package org.usfirst.frc.team3603.robot;
 
 import edu.wpi.first.wpilibj.ADXL362;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -43,6 +44,8 @@ public class Robot extends IterativeRobot {
     
     Vision2017 vision = new Vision2017();
     
+    CameraServer camera = CameraServer.getInstance();
+    
     public void robotInit() {
     	gyro.calibrate();
     	gyro.reset();
@@ -50,6 +53,8 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
+		
+		camera.startAutomaticCapture("cam0", 0);
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
