@@ -29,11 +29,11 @@ public class Robot extends IterativeRobot {
 	Joystick joy1 = new Joystick(0);
 	Joystick joy2 = new Joystick(1);
 	
-    Victor backLeft = new Victor(0);
+    Victor backLeft = new Victor(4);
     Victor backRight = new Victor(1);
     Victor frontLeft = new Victor(2);
     Victor frontRight = new Victor(3);
-    Victor shoot = new Victor(4);
+    Victor shoot = new Victor(5);
     
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
     
@@ -87,7 +87,7 @@ public class Robot extends IterativeRobot {
 	    		
 	    		double x = Math.pow(joy1.getRawAxis(0), 3);
 	    		double y = Math.pow(joy1.getRawAxis(1), 3);
-	    		double rot = Math.pow(joy1.getTwist(), 3);
+	    		double rot = Math.pow(joy2.getRawAxis(0), 3);
 	    		
 	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
 	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, gyro.getAngle());
@@ -95,8 +95,12 @@ public class Robot extends IterativeRobot {
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
-    		SmartDashboard.putNumber("Center X", vision.getContour1CenterX());
-    		SmartDashboard.putNumber("Center Y", vision.getContour1CenterY());
+    		try {
+    			SmartDashboard.putNumber("Center X", vision.getContour1CenterX());
+        		SmartDashboard.putNumber("Center Y", vision.getContour1CenterY());
+				Thread.sleep(25);
+			} catch (InterruptedException e) {
+			}
     	}
     }
     public void testPeriodic() {
