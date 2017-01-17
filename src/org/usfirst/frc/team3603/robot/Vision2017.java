@@ -5,7 +5,6 @@ import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.vision.VisionThread;
 
 public class Vision2017 {
@@ -13,20 +12,20 @@ public class Vision2017 {
 	private static final int IMG_HEIGHT = 240;
 
 	private VisionThread visionThread;
-	private double contour1CenterX = 0.0;
-	private double contour1CenterY = 0.0;
-	private double contour1Height = 0.0;
+	private double contour1CenterX;
+	private double contour1CenterY;
+	private double contour1Height;
 
-	private double contour2CenterX = 0.0;
-	private double contour2CenterY = 0.0;
-	private double contour2Height = 0.0;
+	private double contour2CenterX;
+	private double contour2CenterY;
+	private double contour2Height;
 	
 	public boolean flag = false; 
 
 	private final Object imgLock = new Object();
 
 	public Vision2017() {
-		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
+		UsbCamera camera = new UsbCamera("cam0", 0);
 		camera.setResolution(IMG_WIDTH, IMG_HEIGHT);
 		
 		visionThread = new VisionThread(camera, new Pipeline(), pipeline -> {
@@ -45,7 +44,7 @@ public class Vision2017 {
 				}
 		}
 		});
-		visionThread.start(); 
+		visionThread.start();
 	}
 
 	// methods for getting contour values
@@ -71,6 +70,11 @@ public class Vision2017 {
 
 	public double GetContour2Height() {
 		return contour2Height;
+	}
+	
+	public double centerGear() {
+		double x = (contour1CenterX+contour2CenterX)/2;
+		return x;
 	}
 
 	public int GetCameraWidth() {

@@ -29,10 +29,10 @@ public class Robot extends IterativeRobot {
 	Joystick joy1 = new Joystick(0);
 	Joystick joy2 = new Joystick(1);
 	
-    Victor backLeft = new Victor(4);//
-    Victor backRight = new Victor(1);//
-    Victor frontLeft = new Victor(2);//
-    Victor frontRight = new Victor(3);//Fix port numbers
+    Victor backLeft = new Victor(1);//
+    Victor backRight = new Victor(2);//
+    Victor frontLeft = new Victor(3);//
+    Victor frontRight = new Victor(4);//
     Victor shoot = new Victor(5);
     
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
@@ -42,39 +42,37 @@ public class Robot extends IterativeRobot {
     Timer timer = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
-    Vision2017 vision = new Vision2017();
-    
+    Vision2017 vision;
     CameraServer camera = CameraServer.getInstance();
     
     public void robotInit() {
+    	frontRight.setInverted(true);
+    	backRight.setInverted(true);
     	gyro.calibrate();
     	gyro.reset();
     	chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
-		
-		camera.startAutomaticCapture("cam0", 0);//
+		camera.startAutomaticCapture();
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
     }
     public void autonomousPeriodic() {
     	timer.start();
-    	while(isEnabled() && isAutonomous()) {
-	    	switch (autoSelected) {
-			case defaultAuto:
-				DefaultAuto();
-				break;
-	
-			case redAuton:
-				//RedAuton();
-				break;
-			
-			case blueAuton:
-				//BlueAuton();
-				break;
-			}
+    	switch (autoSelected) {
+		case defaultAuto:
+			DefaultAuto();
+			break;
+
+		case redAuton:
+			RedAuton();
+			break;
+		
+		case blueAuton:
+			BlueAuton();
+			break;
     	}
     }
     
@@ -84,20 +82,44 @@ public class Robot extends IterativeRobot {
     			/***********************
 	    		 *** DRIVER CONTROLS ***
 	    		 ***********************/
-	    		
+    			
+	    		final double CENTER_IMAGE = vision.GetCameraWidth()/2;
 	    		double x = Math.pow(joy1.getRawAxis(0), 3);
 	    		double y = Math.pow(joy1.getRawAxis(1), 3);
-	    		double rot = Math.pow(joy2.getRawAxis(0), 3);
+	    		double rot = Math.pow(joy1.getTwist(), 3)/2;
 	    		
 	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
-	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, gyro.getAngle());
+	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
 	    		}
+	    		while(joy1.getRawButton(1)) {
+	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+	    		}
+	    		boolean gear = false;
+	    		
+	    		while(joy1.getRawButton(2)) {
+		    		while(joy1.getRawButton(2) && gear == false) {
+		    			if(vision.centerGear()> CENTER_IMAGE + 20 && vision.centerGear() != 0) {
+		    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
+		    			} else if(vision.centerGear()< CENTER_IMAGE - 20 && vision.centerGear() != 0) {
+		    				mainDrive.mecanumDrive_Cartesian(0, 0, .28, 0);
+		    			} else if(vision.centerGear() > CENTER_IMAGE - 20 && vision.centerGear() < CENTER_IMAGE + 20) {
+		    				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+		    				gear = true;
+		    			}
+		    			SmartDashboard.putNumber("Center X", vision.centerGear());
+		        		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
+		        		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
+		    		}
+	    		}
+	    		
+	    		
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
     		try {
-    			SmartDashboard.putNumber("Center X", vision.GetContour1CenterX());
+    			SmartDashboard.putNumber("Center X", vision.centerGear());
         		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
+        		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
 				Thread.sleep(25);
 			} catch (InterruptedException e) {
 			}
@@ -107,67 +129,36 @@ public class Robot extends IterativeRobot {
     }
     
     private void DefaultAuto() {
-    	while(enc.getDistance() < 10 && timer.get() < 15) {
-			mainDrive.mecanumDrive_Cartesian(0, .5, 0, gyro.getAngle());
-		}
-	}
-    /*
-    private void RedAuton() {
-    	double off = 123456789;
-    	timer.start();
-    	while(isEnabled() && isAutonomous() && timer.get() < 15) {
-    		while(timer.get() < 3 && enc.getDistance() < 8) {
-    			mainDrive.mecanumDrive_Cartesian(0, 1.0, 0, gyro.getAngle());
-    		}
-    		while(timer.get() < 3 && gyro.getAngle() < 45) {
-    			mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
-    		}
-    		while(timer.get() < 9 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50) && vision.getCenterGear()!=123456789) {
-    			off = vision.getCenterGear() - vision.getImageWidth();
-    			if(off > vision.getImageWidth() + 50) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
-    			}
-    			if(off < vision.getImageWidth() - 50) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
-    			}
-    		}
-    		while(timer.get() < 11) {
-    			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-    		}
-    		while(timer.get() < 15) {
-    			shoot.set(1);
-    		}
+    	timer.reset();
+    	gyro.reset();
+    	while(isAutonomous() && isEnabled() && timer.get() < 6.0) {
+    		mainDrive.mecanumDrive_Cartesian(0, -0.2, 0.2, gyro.getAngle());
     	}
-    	shoot.set(0);
+	}
+    
+    private void RedAuton() {
+    	timer.reset();
+    	gyro.reset();
+    	
+    	while(isAutonomous() && isEnabled()) {
+    		while(timer.get() < 3) {
+    			if(vision.centerGear()> vision.GetCameraWidth() + 30) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
+    			} else if(vision.centerGear()< vision.GetCameraWidth() - 30) {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, .28, 0);
+    			} else {
+    				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+    			}
+    		}
+    		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+    	}
+    	
     }
     
     private void BlueAuton() {
-    	double off = 123456789;
-    	timer.start();
-    	while(isEnabled() && isAutonomous() && timer.get() < 15) {
-    		while(timer.get() < 3 && enc.getDistance() < 8) {
-    			mainDrive.mecanumDrive_Cartesian(0, 1.0, 0, gyro.getAngle());
-    		}
-    		while(timer.get() < 3 && gyro.getAngle() > -45) {
-    			mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
-    		} 
-    		while(timer.get() < 9 && (off <= vision.getImageWidth()-50 || off >= vision.getImageWidth()+50) && vision.getCenterGear()!=123456789) {
-    			off = vision.getCenterGear() - vision.getImageWidth();
-    			if(off > vision.getImageWidth() + 50) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, 0.4, gyro.getAngle());
-    			}
-    			if(off < vision.getImageWidth() - 50) {
-    				mainDrive.mecanumDrive_Cartesian(0, 0, -0.4, gyro.getAngle());
-    			}
-    		}
-    		while(timer.get() < 11) {
-    			mainDrive.mecanumDrive_Cartesian(0, 0.4, 0, 0);
-    		}
-    		while(timer.get() < 15) {
-    			shoot.set(1);
-    		}
+    	while(isAutonomous() && isEnabled()) {
+    		mainDrive.mecanumDrive_Cartesian(0, 0, -.3, 0);
     	}
-    	shoot.set(0);
     }
-    */
+    
 }
