@@ -55,6 +55,7 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
 		camera.startAutomaticCapture();
+		//
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
