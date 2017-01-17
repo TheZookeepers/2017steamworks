@@ -1,1 +1,9 @@
 CONTROLS
+
+Right joystick: input->output
+forwards/backwards -> forwards/backwards
+left/right -> strafe left/ strafe right
+
+
+Left joystick: input -> output
+left/right -> turn left/turn right

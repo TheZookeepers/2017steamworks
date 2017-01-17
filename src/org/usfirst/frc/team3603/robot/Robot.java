@@ -29,10 +29,10 @@ public class Robot extends IterativeRobot {
 	Joystick joy1 = new Joystick(0);
 	Joystick joy2 = new Joystick(1);
 	
-    Victor backLeft = new Victor(4);
-    Victor backRight = new Victor(1);
-    Victor frontLeft = new Victor(2);
-    Victor frontRight = new Victor(3);
+    Victor backLeft = new Victor(4);//
+    Victor backRight = new Victor(1);//
+    Victor frontLeft = new Victor(2);//
+    Victor frontRight = new Victor(3);//Fix port numbers
     Victor shoot = new Victor(5);
     
     RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
@@ -96,8 +96,8 @@ public class Robot extends IterativeRobot {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
     		try {
-    			SmartDashboard.putNumber("Center X", vision.getContour1CenterX());
-        		SmartDashboard.putNumber("Center Y", vision.getContour1CenterY());
+    			SmartDashboard.putNumber("Center X", vision.GetContour1CenterX());
+        		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
 				Thread.sleep(25);
 			} catch (InterruptedException e) {
 			}

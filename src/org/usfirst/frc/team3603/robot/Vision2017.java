@@ -1,10 +1,11 @@
+//package org.usfirst.frc.team498.robot;
 package org.usfirst.frc.team3603.robot;
+
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
-import edu.wpi.first.wpilibj.vision.VisionRunner.Listener;
 import edu.wpi.first.wpilibj.vision.VisionThread;
 
 public class Vision2017 {
@@ -27,59 +28,56 @@ public class Vision2017 {
 	public Vision2017() {
 		UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
 		camera.setResolution(IMG_WIDTH, IMG_HEIGHT);
+		
+		visionThread = new VisionThread(camera, new Pipeline(), pipeline -> {
+		if (pipeline.filterContoursOutput().size() >= 2) {
+				Rect contour1 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
+				Rect contour2 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(1));
+				synchronized (imgLock) {
+					contour1CenterX = contour1.x + (contour1.width / 2);
+					contour1CenterY = contour1.y + (contour1.height / 2);
+					contour1Height = contour1.height;
 
-		visionThread = new VisionThread(camera, new Pipeline(), new Listener<Pipeline>() {
-			@Override
-			public void copyPipelineOutputs(Pipeline pipeline) {
-				if (!pipeline.filterContoursOutput().isEmpty()) {
-					Rect contour1 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(0));
-					Rect contour2 = Imgproc.boundingRect(pipeline.filterContoursOutput().get(1));
-					synchronized (imgLock) {
-						contour1CenterX = contour1.x + (contour1.width / 2);
-						contour1CenterY = contour1.y + (contour1.height / 2);
-						contour1Height = contour1.height;
-
-						contour2CenterX = contour2.x + (contour2.width / 2);
-						contour2CenterY = contour2.y + (contour2.height / 2);
-						contour2Height = contour2.height;
-						flag = true;
-					}
+					contour2CenterX = contour2.x + (contour2.width / 2);
+					contour2CenterY = contour2.y + (contour2.height / 2);
+					contour2Height = contour2.height;
+					flag = true;
 				}
-			}
+		}
 		});
 		visionThread.start(); 
 	}
 
 	// methods for getting contour values
-	public double getContour1CenterX() {
+	public double GetContour1CenterX() {
 		return contour1CenterX;
 	}
 
-	public double getContour1CenterY() {
+	public double GetContour1CenterY() {
 		return contour1CenterY;
 	}
 
-	public double getContour1Height() {
+	public double GetContour1Height() {
 		return contour1Height;
 	}
 
-	public double getContour2CenterX() {
+	public double GetContour2CenterX() {
 		return contour2CenterX;
 	}
 
-	public double getContour2CenterY() {
+	public double GetContour2CenterY() {
 		return contour2CenterY;
 	}
 
-	public double getContour2Height() {
+	public double GetContour2Height() {
 		return contour2Height;
 	}
 
-	public int getCameraWidth() {
+	public int GetCameraWidth() {
 		return IMG_WIDTH;
 	}
 
-	public int getCameraHeight() {
+	public int GetCameraHeight() {
 		return IMG_HEIGHT;
 	}
 }
