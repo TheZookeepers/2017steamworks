@@ -6,6 +6,7 @@
  ****************************************/
 package org.usfirst.frc.team3603.robot;
 
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.ADXL362;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.CameraServer;
@@ -23,6 +24,7 @@ public class Robot extends IterativeRobot {
 	final String defaultAuto = "Default";
 	final String redAuton = "redAuton";
 	final String blueAuton = "blueAuton";
+	final static int visAll = 20;
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	
@@ -42,10 +44,10 @@ public class Robot extends IterativeRobot {
     Timer timer = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
-    Vision2017 vision;
-    CameraServer camera = CameraServer.getInstance();
+    Vision2017 vision = new Vision2017(0);
     
-    public void robotInit() {
+    @SuppressWarnings("unused")
+	public void robotInit() {
     	frontRight.setInverted(true);
     	backRight.setInverted(true);
     	gyro.calibrate();
@@ -54,8 +56,7 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
-		camera.startAutomaticCapture();
-		//
+		UsbCamera cam1 = CameraServer.getInstance().startAutomaticCapture(1);
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
@@ -94,33 +95,29 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		while(joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+	    			read();
 	    		}
 	    		boolean gear = false;
 	    		
 	    		while(joy1.getRawButton(2)) {
 		    		while(joy1.getRawButton(2) && gear == false) {
-		    			if(vision.centerGear()> CENTER_IMAGE + 20 && vision.centerGear() != 0) {
+		    			if(vision.centerGear()> CENTER_IMAGE + visAll) {
 		    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
-		    			} else if(vision.centerGear()< CENTER_IMAGE - 20 && vision.centerGear() != 0) {
+		    			} else if(vision.centerGear()< CENTER_IMAGE - visAll) {
 		    				mainDrive.mecanumDrive_Cartesian(0, 0, .28, 0);
-		    			} else if(vision.centerGear() > CENTER_IMAGE - 20 && vision.centerGear() < CENTER_IMAGE + 20) {
+		    			} else if(vision.centerGear() > CENTER_IMAGE - visAll && vision.centerGear() < CENTER_IMAGE + visAll) {
 		    				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 		    				gear = true;
 		    			}
-		    			SmartDashboard.putNumber("Center X", vision.centerGear());
-		        		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
-		        		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
+		    			read();
 		    		}
+		    		read();
 	    		}
-	    		
-	    		
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
     		try {
-    			SmartDashboard.putNumber("Center X", vision.centerGear());
-        		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
-        		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
+    			read();
 				Thread.sleep(25);
 			} catch (InterruptedException e) {
 			}
@@ -129,11 +126,20 @@ public class Robot extends IterativeRobot {
     public void testPeriodic() {
     }
     
+    void read() {
+    	SmartDashboard.putNumber("Center X", vision.centerGear());
+		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
+		SmartDashboard.putNumber("Number of Contours", vision.getNumContours());/**/
+		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
+		SmartDashboard.putNumber("POV", joy1.getPOV());
+    }
+    
     private void DefaultAuto() {
     	timer.reset();
     	gyro.reset();
     	while(isAutonomous() && isEnabled() && timer.get() < 6.0) {
     		mainDrive.mecanumDrive_Cartesian(0, -0.2, 0.2, gyro.getAngle());
+    		read();
     	}
 	}
     
@@ -142,16 +148,20 @@ public class Robot extends IterativeRobot {
     	gyro.reset();
     	
     	while(isAutonomous() && isEnabled()) {
-    		while(timer.get() < 3) {
-    			if(vision.centerGear()> vision.GetCameraWidth() + 30) {
+    		boolean end = false;
+    		while(timer.get() < 3 && end == false) {
+    			if(vision.centerGear()> vision.GetCameraWidth() + visAll) {
     				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
-    			} else if(vision.centerGear()< vision.GetCameraWidth() - 30) {
+    			} else if(vision.centerGear()< vision.GetCameraWidth() - visAll) {
     				mainDrive.mecanumDrive_Cartesian(0, 0, .28, 0);
     			} else {
     				mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+    				end = true;
     			}
+    			read();
     		}
     		mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
+    		read();
     	}
     	
     }
@@ -159,6 +169,7 @@ public class Robot extends IterativeRobot {
     private void BlueAuton() {
     	while(isAutonomous() && isEnabled()) {
     		mainDrive.mecanumDrive_Cartesian(0, 0, -.3, 0);
+    		read();
     	}
     }
     

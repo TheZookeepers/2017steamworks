@@ -8,8 +8,8 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.vision.VisionThread;
 
 public class Vision2017 {
-	private static final int IMG_WIDTH = 320;
-	private static final int IMG_HEIGHT = 240;
+	private static final int IMG_WIDTH = 480;//120*4
+	private static final int IMG_HEIGHT = 360;//120*3
 
 	private VisionThread visionThread;
 	private double contour1CenterX;
@@ -21,11 +21,13 @@ public class Vision2017 {
 	private double contour2Height;
 	
 	public boolean flag = false; 
+	public boolean contours = false;
+	public Pipeline num;/**/
 
 	private final Object imgLock = new Object();
 
-	public Vision2017() {
-		UsbCamera camera = new UsbCamera("cam0", 0);
+	public Vision2017(int cam) {
+		UsbCamera camera = new UsbCamera("cam0", cam);
 		camera.setResolution(IMG_WIDTH, IMG_HEIGHT);
 		
 		visionThread = new VisionThread(camera, new Pipeline(), pipeline -> {
@@ -41,7 +43,11 @@ public class Vision2017 {
 					contour2CenterY = contour2.y + (contour2.height / 2);
 					contour2Height = contour2.height;
 					flag = true;
+					contours = true;
+					num = pipeline;/**/
 				}
+		} else {
+			contours = false;/**/
 		}
 		});
 		visionThread.start();
@@ -73,8 +79,7 @@ public class Vision2017 {
 	}
 	
 	public double centerGear() {
-		double x = (contour1CenterX+contour2CenterX)/2;
-		return x;
+		return (contour1CenterX+contour2CenterX)/2;
 	}
 
 	public int GetCameraWidth() {
@@ -83,5 +88,13 @@ public class Vision2017 {
 
 	public int GetCameraHeight() {
 		return IMG_HEIGHT;
+	}
+	
+	public boolean contours() {
+		return contours;/**/
+	}
+	
+	public int getNumContours() {
+		return num.filterContoursOutput().size();/**/
 	}
 }
