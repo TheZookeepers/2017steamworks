@@ -44,9 +44,12 @@ public class Robot extends IterativeRobot {
     Timer timer = new Timer();
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
-    Vision2017 vision = new Vision2017(0);
+    int x = 0;
+    boolean y1 = false;
     
-    @SuppressWarnings("unused")
+    Vision2017 vision;
+    UsbCamera camera;
+    
 	public void robotInit() {
     	frontRight.setInverted(true);
     	backRight.setInverted(true);
@@ -56,7 +59,17 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
-		UsbCamera cam1 = CameraServer.getInstance().startAutomaticCapture(1);
+		
+		switch(x) {
+		case 0:
+			vision = new Vision2017(0);
+			y1 = true;
+			break;
+		case 1:
+			camera = CameraServer.getInstance().startAutomaticCapture("cam0", 0);
+			y1 = false;
+			break;
+		}
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
@@ -99,7 +112,7 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		boolean gear = false;
 	    		
-	    		while(joy1.getRawButton(2)) {
+	    		while(joy1.getRawButton(2) && y1) {
 		    		while(joy1.getRawButton(2) && gear == false) {
 		    			if(vision.centerGear()> CENTER_IMAGE + visAll) {
 		    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
@@ -113,6 +126,7 @@ public class Robot extends IterativeRobot {
 		    		}
 		    		read();
 	    		}
+	    		
     		} else {
     			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
     		}
