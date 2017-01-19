@@ -6,10 +6,8 @@
  ****************************************/
 package org.usfirst.frc.team3603.robot;
 
-import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.ADXL362;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.CameraServer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -45,10 +43,8 @@ public class Robot extends IterativeRobot {
     Encoder enc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
     
     int x = 0;
-    boolean y1 = false;
     
-    Vision2017 vision;
-    UsbCamera camera;
+    Vision2017 vision = new Vision2017(0);
     
 	public void robotInit() {
     	frontRight.setInverted(true);
@@ -59,17 +55,6 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
-		
-		switch(x) {
-		case 0:
-			vision = new Vision2017(0);
-			y1 = true;
-			break;
-		case 1:
-			camera = CameraServer.getInstance().startAutomaticCapture("cam0", 0);
-			y1 = false;
-			break;
-		}
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
@@ -103,8 +88,12 @@ public class Robot extends IterativeRobot {
 	    		double y = Math.pow(joy1.getRawAxis(1), 3);
 	    		double rot = Math.pow(joy1.getTwist(), 3)/2;
 	    		
-	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
+	    		if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1 && joy1.getRawButton(2)) {
+	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, gyro.getAngle());
+	    		} else if(Math.abs(x)>=0.1 || Math.abs(y)>=0.1 || Math.abs(rot)>=0.1) {
 	    			mainDrive.mecanumDrive_Cartesian(x, y, rot, 0);
+	    		} else {
+	    			
 	    		}
 	    		while(joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
@@ -112,8 +101,12 @@ public class Robot extends IterativeRobot {
 	    		}
 	    		boolean gear = false;
 	    		
-	    		while(joy1.getRawButton(2) && y1) {
-		    		while(joy1.getRawButton(2) && gear == false) {
+	    		if(joy1.getRawButton(4)) {
+	    			gyro.reset();
+	    		}
+	    		
+	    		while(joy1.getRawButton(3)) {
+		    		while(joy1.getRawButton(3) && gear == false) {
 		    			if(vision.centerGear()> CENTER_IMAGE + visAll) {
 		    				mainDrive.mecanumDrive_Cartesian(0, 0, -.28, 0);
 		    			} else if(vision.centerGear()< CENTER_IMAGE - visAll) {
@@ -143,9 +136,7 @@ public class Robot extends IterativeRobot {
     void read() {
     	SmartDashboard.putNumber("Center X", vision.centerGear());
 		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
-		SmartDashboard.putNumber("Number of Contours", vision.getNumContours());/**/
 		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
-		SmartDashboard.putNumber("POV", joy1.getPOV());
     }
     
     private void DefaultAuto() {

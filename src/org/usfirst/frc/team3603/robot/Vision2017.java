@@ -22,7 +22,6 @@ public class Vision2017 {
 	
 	public boolean flag = false; 
 	public boolean contours = false;
-	public Pipeline num;/**/
 
 	private final Object imgLock = new Object();
 
@@ -43,11 +42,7 @@ public class Vision2017 {
 					contour2CenterY = contour2.y + (contour2.height / 2);
 					contour2Height = contour2.height;
 					flag = true;
-					contours = true;
-					num = pipeline;/**/
 				}
-		} else {
-			contours = false;/**/
 		}
 		});
 		visionThread.start();
@@ -88,13 +83,5 @@ public class Vision2017 {
 
 	public int GetCameraHeight() {
 		return IMG_HEIGHT;
-	}
-	
-	public boolean contours() {
-		return contours;/**/
-	}
-	
-	public int getNumContours() {
-		return num.filterContoursOutput().size();/**/
 	}
 }
