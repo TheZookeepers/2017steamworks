@@ -55,6 +55,11 @@ public class Robot extends IterativeRobot {
 		chooser.addObject("Red Autonomous Code", redAuton);
 		chooser.addObject("Blue Autonomous Code", blueAuton);
 		SmartDashboard.putData("Auto choices", chooser);
+		
+		final double Encoder_Distance = 5.0/12.0*Math.PI/270.0;
+		
+    	enc.setDistancePerPulse(Encoder_Distance);
+    	enc.setSamplesToAverage(7);
     }
 	public void autonomousInit() {
 		autoSelected = chooser.getSelected();
@@ -95,6 +100,43 @@ public class Robot extends IterativeRobot {
 	    		} else {
 	    			
 	    		}
+	    		if(enc.getDistance() < 2.0) {
+	    			mainDrive.mecanumDrive_Cartesian(0, -0.5, 0, 0);
+	    		}
+	    		
+	    		while(joy1.getPOV()!=-1 && !joy1.getRawButton(1)) {
+	    			int pov = joy1.getPOV();
+	    			switch(pov) {
+	    			case -1:
+	    				break;
+	    			case 0:
+	    				mainDrive.mecanumDrive_Cartesian(0, -.75, 0, 0);
+	    				break;
+	    			case 45:
+	    				mainDrive.mecanumDrive_Cartesian(-.75, -.75, 0, 0);
+	    				break;
+	    			case 90:
+	    				mainDrive.mecanumDrive_Cartesian(-.75, 0, 0, 0);
+	    				break;
+	    			case 135:
+	    				mainDrive.mecanumDrive_Cartesian(-.75, .75, 0, 0);
+	    				break;
+	    			case 180:
+	    				mainDrive.mecanumDrive_Cartesian(0, .75, 0, 0);
+	    				break;
+	    			case 225:
+	    				mainDrive.mecanumDrive_Cartesian(.75, .75, 0, 0);
+	    				break;
+	    			case 270:
+	    				mainDrive.mecanumDrive_Cartesian(.75, 0, 0, 0);
+	    				break;
+	    			case 315:
+	    				mainDrive.mecanumDrive_Cartesian(.75, -.75, 0, 0);
+	    				break;
+	    			}
+	    			read();
+	    		}
+	    		
 	    		while(joy1.getRawButton(1)) {
 	    			mainDrive.mecanumDrive_Cartesian(0, 0, 0, 0);
 	    			read();
@@ -103,6 +145,7 @@ public class Robot extends IterativeRobot {
 	    		
 	    		if(joy1.getRawButton(4)) {
 	    			gyro.reset();
+	    			enc.reset();
 	    		}
 	    		
 	    		while(joy1.getRawButton(3)) {
@@ -137,6 +180,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Center X", vision.centerGear());
 		SmartDashboard.putNumber("Center Y", vision.GetContour1CenterY());
 		SmartDashboard.putNumber("Gyro angle", gyro.getAngle());
+		SmartDashboard.putNumber("Encoder", enc.getDistance());
     }
     
     private void DefaultAuto() {
@@ -173,8 +217,9 @@ public class Robot extends IterativeRobot {
     
     private void BlueAuton() {
     	while(isAutonomous() && isEnabled()) {
-    		mainDrive.mecanumDrive_Cartesian(0, 0, -.3, 0);
-    		read();
+    		if(enc.getDistance() < 5.0) {
+    			mainDrive.mecanumDrive_Cartesian(0, -0.5, 0, 0);
+    		}
     	}
     }
     
