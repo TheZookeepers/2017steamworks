@@ -17,14 +17,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends IterativeRobot {
-	Victor frontLeft = new Victor(0); // Drive Motor Front Left
-	Victor frontRight = new Victor(1);
-	Victor backLeft = new Victor(2);
-	Victor backRight = new Victor(3);
+	Victor frontLeft = new Victor(1); // Drive Motor Front Left
+	Victor frontRight = new Victor(1); // Drive Motor Front Right
+	Victor backLeft = new Victor(0); // Drive Motor Back Left
+	Victor backRight = new Victor(0); // Drive Motor Back Right
 	RobotDrive mainDrive = new RobotDrive(frontLeft, backLeft, frontRight, backRight);
 	
 	Joystick joystick = new Joystick(0); // Driver Controller
-	Joystick xbox = new Joystick(1); // Secondary Controller
+	Joystick xbox = new Joystick(1); // Driver Secondary Controller
     public void robotInit() {
     	
     }
